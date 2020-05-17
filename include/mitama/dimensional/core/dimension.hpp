@@ -1,7 +1,7 @@
 #pragma once
 #include <mitama/dimensional/mitamagic/type_list.hpp>
-#include <mitama/dimensional/base_dimension.hpp>
-#include <mitama/dimensional/core.hpp>
+#include <mitama/dimensional/core/base_dimension.hpp>
+#include <mitama/dimensional/core/core.hpp>
 #include <ratio>
 
 /// Dimension types

@@ -1,7 +1,8 @@
 #pragma once
 #include <concepts>
-#include <mitama/dimensional/dimension.hpp>
+#include <mitama/dimensional/core/dimension.hpp>
 
+// concepts for refinement
 namespace mitama::dimensional::refine {
   template <class Quantity, class Dimension>
   concept has_dimension = std::same_as<typename Quantity::dimension_type, Dimension>;

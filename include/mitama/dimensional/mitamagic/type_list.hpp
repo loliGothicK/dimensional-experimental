@@ -66,11 +66,14 @@ namespace mitama::dimensional::mitamagic {
   template <auto, class> struct filter;
 
   template <auto Pred, template <class...> class List, class ...ElemTypes>
-    requires (requires { { Pred(std::type_identity<ElemTypes>{}) } -> std::convertible_to<bool>; } && ...)
+    requires (... && requires { { Pred(std::type_identity<ElemTypes>{}) } -> std::convertible_to<bool>; })
   struct filter<Pred, List<ElemTypes...>>
     : std::type_identity<concat_t<std::conditional_t< Pred(std::type_identity<ElemTypes>{}), type_list<ElemTypes>, type_list<> >...>>
   {};
 
   template <auto Pred, class List>
   using filter_t = typename filter<Pred, List>::type;
+
+  template <template <class> class Pred>
+  inline constexpr auto meta_pred = []<class T>(std::type_identity<T>){ return Pred<T>::value; };
 }

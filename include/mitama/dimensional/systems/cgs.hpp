@@ -1,5 +1,5 @@
 #pragma once
-#include <mitama/dimensional/dimension.hpp>
+#include <mitama/dimensional/core/dimension.hpp>
 
 namespace mitama::dimensional::mks {
   struct length_base_unit : mitamagic::base_unit<base_dimension::length> {};

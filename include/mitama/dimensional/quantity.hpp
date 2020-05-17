@@ -3,8 +3,8 @@
 #include <type_traits>
 #include <concepts>
 #include <mitama/dimensional/mitamagic/type_list.hpp>
-#include <mitama/dimensional/dimension.hpp>
-#include <mitama/dimensional/core.hpp>
+#include <mitama/dimensional/core/dimension.hpp>
+#include <mitama/dimensional/core/core.hpp>
 
 namespace mitama::dimensional {
   // quantity container
