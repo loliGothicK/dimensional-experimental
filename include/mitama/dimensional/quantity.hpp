@@ -2,7 +2,7 @@
 #include <ratio>
 #include <type_traits>
 #include <concepts>
-#include <mitama/dimensional/mitamagic/type_list.hpp>
+#include <mitama/dimensional/core/type_list.hpp>
 #include <mitama/dimensional/core/dimension.hpp>
 #include <mitama/dimensional/core/core.hpp>
 
@@ -13,10 +13,10 @@ namespace mitama::dimensional {
 
   template <class System, class Dimension, class UnderlyingType>
   struct quantity<
-    /* Phantom type */ mitamagic::unit<Dimension, System>,
+    /* Phantom type */ core::unit<Dimension, System>,
     /*  Value type  */ UnderlyingType>
   {
-    using unit_type = mitamagic::unit<Dimension, System>;
+    using unit_type = core::unit<Dimension, System>;
     using dimension_type = Dimension;
     using system_type = System;
 
