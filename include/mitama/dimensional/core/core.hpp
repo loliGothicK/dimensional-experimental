@@ -22,11 +22,11 @@ namespace mitama::dimensional::core {
   template <class BaseDim, class ...Dims>
   struct filter_by<BaseDim, type_list<Dims...>>
           : std::type_identity<
-              concat< // Collects Just Dim: [Maybe *] -> [*]
-                std::conditional_t< // Maybe Dim --------------------------------------------------------+
+              concat< // Just Collects Just Dim
+                std::conditional_t< // Constructs Maybe Dim ---------------------------------------------+
                   std::is_same_v<BaseDim, typename Dims::dimension_type>, // if Dim is same as BaseDim   |
-                  type_list<Dims>, // then; Just Dim                                                     |
-                  type_list<>      // otherwise; Nothing                                                 |
+                  type_list<Dims>, // then; type_list<Dim> instead of Just Dim                           |
+                  type_list<>      // otherwise; empty type_list instead of Nothing                      |
                 >... // <--------------------------------------------------------------------------------+
               >
           >
