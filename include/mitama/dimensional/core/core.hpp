@@ -133,7 +133,7 @@ namespace mitama::dimensional::core {
           unit<type_list<RightDims...>, homogeneous_system<BaseDims...>>>
           : std::type_identity<
             unit<
-              filter_t<
+              filtered<
                 []<class D, auto N, auto _>(std::type_identity<dim<D, std::ratio<N, _>>>)
                 /* => */ { return !!N; },
                 type_list<dim<typename BaseDims::dimension_type, std::ratio_add<

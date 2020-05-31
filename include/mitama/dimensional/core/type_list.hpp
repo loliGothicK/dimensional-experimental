@@ -62,18 +62,29 @@ namespace mitama::dimensional::core {
   template <class... Packs>
   using concat = _secrets::concat_impl<Packs...>::type;
 
+  namespace _secrets {
+    template<auto, class>
+    struct filter_impl;
 
+    template<auto Pred, template<class...> class List, class ...ElemTypes>
+            requires (... && requires { {Pred(std::type_identity<ElemTypes>{})} -> std::convertible_to<bool>; })
+    struct filter_impl<Pred, List<ElemTypes...>>
+            : std::type_identity<
+              concat<
+                std::conditional_t<
+                  Pred(std::type_identity<ElemTypes>{}),
+                  type_list<ElemTypes>,
+                  type_list<>
+                >...
+              >
+            >
+    {};
+  }
+
+  // filter operation for type_list
   // (* -> Bool) -> [*] -> [*]
-  template <auto, class> struct filter;
-
-  template <auto Pred, template <class...> class List, class ...ElemTypes>
-    requires (... && requires { { Pred(std::type_identity<ElemTypes>{}) } -> std::convertible_to<bool>; })
-  struct filter<Pred, List<ElemTypes...>>
-    : std::type_identity<concat<std::conditional_t< Pred(std::type_identity<ElemTypes>{}), type_list<ElemTypes>, type_list<> >...>>
-  {};
-
   template <auto Pred, class List>
-  using filter_t = filter<Pred, List>::type;
+  using filtered = _secrets::filter_impl<Pred, List>::type;
 
   template <template <class> class Pred>
   [[maybe_unused]] inline constexpr auto meta_pred = []<class T>(std::type_identity<T>){ return Pred<T>::value; };
