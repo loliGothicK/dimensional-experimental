@@ -39,25 +39,28 @@ namespace mitama::dimensional::core {
   template <class Default, class ToFind, class Dict>
   using get_or_default = _secrets::get_or_default_impl<Default, ToFind, Dict>::type;
 
+  namespace _secrets {
+    template<class...>
+    struct concat_impl;
+    template<template<class...> class Pack, class... Elems>
+    struct concat_impl<Pack<Elems...>> {
+      using type = Pack<Elems...>;
+    };
+
+    template<template<class...> class Pack, class... Left, class... Right>
+    struct concat_impl<Pack<Left...>, Pack<Right...>> {
+      using type = Pack<Left..., Right...>;
+    };
+
+    template<class Pack1st, class Pack2nd, class... PackTail>
+    struct concat_impl<Pack1st, Pack2nd, PackTail...>
+            : concat_impl<typename concat_impl<Pack1st, Pack2nd>::type, PackTail...>
+    {};
+  }
+
   // Concatenation for TypeList
-  template <class...> struct concat;
-  template <template <class...> class Pack, class... Elems>
-  struct concat<Pack<Elems...>> {
-    using type = Pack<Elems...>;
-  };
-
-  template <template <class...> class Pack, class... Left, class... Right>
-  struct concat<Pack<Left...>, Pack<Right...>> {
-    using type = Pack<Left..., Right...>;
-  };
-
-  template <class Pack1st, class Pack2nd, class... PackTail>
-  struct concat<Pack1st, Pack2nd, PackTail...>
-    : concat<typename concat<Pack1st, Pack2nd>::type, PackTail...>
-  {};
-
   template <class... Packs>
-  using concat_t = concat<Packs...>::type;
+  using concat = _secrets::concat_impl<Packs...>::type;
 
 
   // (* -> Bool) -> [*] -> [*]
@@ -66,7 +69,7 @@ namespace mitama::dimensional::core {
   template <auto Pred, template <class...> class List, class ...ElemTypes>
     requires (... && requires { { Pred(std::type_identity<ElemTypes>{}) } -> std::convertible_to<bool>; })
   struct filter<Pred, List<ElemTypes...>>
-    : std::type_identity<concat_t<std::conditional_t< Pred(std::type_identity<ElemTypes>{}), type_list<ElemTypes>, type_list<> >...>>
+    : std::type_identity<concat<std::conditional_t< Pred(std::type_identity<ElemTypes>{}), type_list<ElemTypes>, type_list<> >...>>
   {};
 
   template <auto Pred, class List>

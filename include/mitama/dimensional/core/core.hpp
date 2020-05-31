@@ -22,7 +22,7 @@ namespace mitama::dimensional::core {
   template <class BaseDim, class ...Dims>
   struct filter_by<BaseDim, type_list<Dims...>>
           : std::type_identity<
-              concat_t< // Collects Just Dim: [Maybe *] -> [*]
+              concat< // Collects Just Dim: [Maybe *] -> [*]
                 std::conditional_t< // Maybe Dim --------------------------------------------------------+
                   std::is_same_v<BaseDim, typename Dims::dimension_type>, // if Dim is same as BaseDim   |
                   type_list<Dims>, // then; Just Dim                                                     |
@@ -84,7 +84,7 @@ namespace mitama::dimensional::core {
   template <class ...Terms, class ...Bases>
   struct reduce_dim<type_list<Terms...>, homogeneous_system<Bases...>>
           : std::type_identity<
-            concat_t<
+            concat<
               typename _secrets::reduce_dim_impl<
                 typename filter_by<Bases, type_list<Terms...>>::type
               >::type...
