@@ -137,8 +137,8 @@ namespace mitama::dimensional::core {
                 []<class D, auto N, auto _>(std::type_identity<dim<D, std::ratio<N, _>>>)
                 /* => */ { return !!N; },
                 type_list<dim<typename BaseDims::dimension_type, std::ratio_add<
-                  get_value_or_t<std::ratio<0>, typename BaseDims::dimension_type, type_list<LeftDims...>>,
-                  get_value_or_t<std::ratio<0>, typename BaseDims::dimension_type, type_list<RightDims...>>
+                  get_or_default<typename BaseDims::dimension_type, std::ratio<0>, type_list<LeftDims...>>,
+                  get_or_default<typename BaseDims::dimension_type, std::ratio<0>, type_list<RightDims...>>
               >>...>>,
               homogeneous_system<BaseDims...>
             >

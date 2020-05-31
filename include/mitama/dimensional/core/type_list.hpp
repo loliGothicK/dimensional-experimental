@@ -4,41 +4,40 @@
 #include <mitama/dimensional/core/concepts.hpp>
 
 namespace mitama::dimensional::core {
-  // type list
   template <class... ElemTypes> struct type_list {};
 
-
-  // internal use only
+  // internal only
   namespace _secrets
   {
-    template <class, class> struct findee;
+    template <class, class> struct disj_hack;
 
     template <template <class, class> class Pair, class ToFind, class Key, class Value>
-    struct findee<ToFind, Pair<Key, Value>>
+    struct disj_hack<ToFind, Pair<Key, Value>>
     {
       static constexpr struct hack {
-        constexpr explicit operator bool() const noexcept { return std::is_same_v<ToFind, Key>; }
-        constexpr bool operator()() const noexcept { return std::is_same_v<ToFind, Key>; }
+        constexpr operator bool() const noexcept { return std::is_same_v<ToFind, Key>; }
         using type = Value;
       } value{};
     };
   } // namespace _secrets
 
+  namespace _secrets {
+    // * -> * -> [(*, *)] -> *
+    template <class K, class V>
+    struct my_pair;
 
-  // * -> * -> [(*, *)] -> *
-  template <class, class, class> struct get_value_or;
-  template <class Default, class ToFind, class ...Pairs>
-    requires core::satisfy_all<core::pair_type<Pairs>...>
-  struct get_value_or<Default, ToFind, type_list<Pairs...>>
-    : std::conditional<
-        std::disjunction_v<_secrets::findee<ToFind, Pairs>...>,
-        typename decltype(std::disjunction<_secrets::findee<ToFind, Pairs>...>::value)::type,
-        Default
-      >
-  {};
+    template <class, class, class> struct get_or_default_impl;
+    template <class ToFind, class Default, class ...Pairs>
+    struct get_or_default_impl<ToFind, Default, type_list<Pairs...>>
+            : std::type_identity<typename decltype(std::disjunction<
+                    _secrets::disj_hack<ToFind, Pairs>...,                  // terms
+                    _secrets::disj_hack<Default, my_pair<Default, Default>> // gurdian
+            >::value)::type>
+    {};
+  }
 
   template <class Default, class ToFind, class Dict>
-  using get_value_or_t = typename get_value_or<Default, ToFind, Dict>::type;
+  using get_or_default = _secrets::get_or_default_impl<Default, ToFind, Dict>::type;
 
   // Concatenation for TypeList
   template <class...> struct concat;
