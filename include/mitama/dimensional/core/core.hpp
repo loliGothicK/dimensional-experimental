@@ -32,7 +32,7 @@ namespace mitama::dimensional::core {
           >
   {};
 
-  // internal use only
+  // internal only
   namespace _secrets {
     template <class ...>
     struct ratio_sum_impl;
@@ -68,6 +68,7 @@ namespace mitama::dimensional::core {
   template <class Dim, class System>
   struct unit;
 
+  // internal only
   namespace _secrets {
     template<class>
     struct reduce_dim_impl;
@@ -101,7 +102,7 @@ namespace mitama::dimensional::core {
   struct unit<type_list<Terms...>, System> {
     // reduced unit-type
     using unit_type      = unit<reduced_dim<type_list<Terms...>, System>, System>;
-    // dimension-type (unit without homogeneous_system)
+    // dimension-type (unit without system)
     using dimension_type = type_list<Terms...>;
     // homogeneous_system-type
     using system_type    = System;
@@ -125,54 +126,57 @@ namespace mitama::dimensional::core {
   struct make_scaled_unit
     { using type = scaled_base_unit<BaseUnit, Scale>; };
 
-  template <class, class> struct unit_add_impl;
+  // internal only
+  namespace _secrets {
+    template <class, class> struct unit_add_impl;
 
-  template <class ...LeftDims, class ...RightDims, class ...BaseDims>
-  struct unit_add_impl<
-          unit<type_list<LeftDims...>, homogeneous_system<BaseDims...>>,
-          unit<type_list<RightDims...>, homogeneous_system<BaseDims...>>>
-          : std::type_identity<
-            unit<
-              filtered<
-                []<class D, auto N, auto _>(std::type_identity<dim<D, std::ratio<N, _>>>)
-                /* => */ { return !!N; },
-                type_list<dim<typename BaseDims::dimension_type, std::ratio_add<
-                  get_or_default<typename BaseDims::dimension_type, std::ratio<0>, type_list<LeftDims...>>,
-                  get_or_default<typename BaseDims::dimension_type, std::ratio<0>, type_list<RightDims...>>
-              >>...>>,
-              homogeneous_system<BaseDims...>
+    template <class ...LeftDims, class ...RightDims, class ...BaseDims>
+    struct unit_add_impl<
+            unit<type_list<LeftDims...>, homogeneous_system<BaseDims...>>,
+            unit<type_list<RightDims...>, homogeneous_system<BaseDims...>>>
+            : std::type_identity<
+              unit<
+                filtered<
+                  []<class D, auto N, auto _>(std::type_identity<dim<D, std::ratio<N, _>>>)
+                  /* => */ { return !!N; },
+                  type_list<dim<typename BaseDims::dimension_type, std::ratio_add<
+                    get_or_default<typename BaseDims::dimension_type, std::ratio<0>, type_list<LeftDims...>>,
+                    get_or_default<typename BaseDims::dimension_type, std::ratio<0>, type_list<RightDims...>>
+                >>...>>,
+                homogeneous_system<BaseDims...>
+              >
             >
-          >
-  {};
+    {};
+  }
 
   template <class L, class R>
-  using unit_add = unit_add_impl<L, R>::type;
+  using unit_add = _secrets::unit_add_impl<L, R>::type;
 
-  template <class> struct unit_negate_impl;
+  // internal only
+  namespace _secrets {
+    template <class> struct unit_negate_impl;
 
-  template <class ...Dims, class System>
-  struct unit_negate_impl<unit<type_list<Dims...>, System>>
-          : std::type_identity<
-            unit<
-              type_list<
-                dim<
-                  typename Dims::base_type,
-                  std::ratio_subtract<
-                    std::ratio<0>,
-                    typename Dims::ratio
-                >>...
-              >,
-              System
+    template <class ...Dims, class System>
+    struct unit_negate_impl<unit<type_list<Dims...>, System>>
+            : std::type_identity<
+              unit<
+                type_list<
+                  dim<
+                    typename Dims::base_type,
+                    std::ratio_subtract<
+                      std::ratio<0>,
+                      typename Dims::ratio
+                  >>...
+                >,
+                System
+              >
             >
-          >
-  {};
+    {};
+  }
 
   template <class U>
-  using unit_negate = unit_negate_impl<U>::type;
+  using unit_negate = _secrets::unit_negate_impl<U>::type;
 
   template <class L, class R>
-  struct unit_subtract_impl: unit_add_impl<L, unit_negate<R>> {};
-
-  template <class L, class R>
-  using unit_subtract = unit_subtract_impl<L, R>::type;
+  using unit_subtract = unit_add<L, unit_negate<R>>;
 }
