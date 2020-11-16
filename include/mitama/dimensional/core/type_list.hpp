@@ -33,7 +33,7 @@ namespace mitama::dimensional::core {
     struct get_or_default_impl<ToFind, Default, type_list<Pairs...>, Projection>
             : std::type_identity<typename decltype(std::disjunction<
                     _secrets::disj_hack<ToFind, Pairs, Projection>...,                  // terms
-                    _secrets::disj_hack<Default, my_pair<Default, Default>, Projection> // guardian
+                    _secrets::disj_hack<Default, my_pair<Default, Default>, std::type_identity> // guardian
             >::value)::type>
     {};
   }

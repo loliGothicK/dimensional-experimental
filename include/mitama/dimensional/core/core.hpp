@@ -24,7 +24,7 @@ namespace mitama::dimensional::core {
           : std::type_identity<
               concat< // Just Collects Just Dim
                 std::conditional_t< // Constructs Maybe Dim ---------------------------------------------+
-                  std::is_same_v<BaseDim, typename Dims::dimension_type>, // if Dim is same as BaseDim   |
+                  std::is_same_v<BaseDim, typename Dims::base_type>, // if Dim is same as BaseDim        |
                   type_list<Dims>, // then; type_list<Dim> instead of Just Dim                           |
                   type_list<>      // otherwise; empty type_list instead of Nothing                      |
                 >... // <--------------------------------------------------------------------------------+
@@ -55,7 +55,9 @@ namespace mitama::dimensional::core {
     struct ratio_sum_impl<First, Second, Tail...>: ratio_sum_impl<std::ratio_add<First, Second>, Tail...> {};
   }
 
-  template <class ...Ratios> using ratio_sum = _secrets::ratio_sum_impl<Ratios...>::type;
+  template <class ...Ratios>
+          requires satisfy_all_of<rational<Ratios>...>
+  using ratio_sum = _secrets::ratio_sum_impl<Ratios...>::type;
 
   // phantom type to distinguish systems of measurement
   template <class...> struct homogeneous_system {};
@@ -82,7 +84,7 @@ namespace mitama::dimensional::core {
     struct reduce_dim_impl<type_list<>>
       { using type = type_list<>; };
     template<class Base, core::rational ... Exponents>
-    struct reduce_dim_impl<type_list < dim < Base, Exponents>...>>
+    struct reduce_dim_impl<type_list<dim<Base, Exponents>...>>
       { using type = type_list<dim<Base, ratio_sum<Exponents...>>>; };
   }
 
@@ -93,7 +95,7 @@ namespace mitama::dimensional::core {
           : std::type_identity<
             concat<
               typename _secrets::reduce_dim_impl<
-                typename filter_by<Bases, type_list<Terms...>>::type
+                typename filter_by<typename Bases::dimension_type, type_list<Terms...>>::type
               >::type...
             >
           >
@@ -139,8 +141,7 @@ namespace mitama::dimensional::core {
   struct scaled_base_unit : private base_unit_tag { using dimension_type = BaseUnit::dimension_type; };
 
   // for scaled_base_unit
-  template <auto Base, core::rational Exponet>
-    requires (std::is_arithmetic_v<decltype(Base)>)
+  template <arithmetic Base, rational Exponent>
   struct scale {};
 
   // helper type function
@@ -159,8 +160,8 @@ namespace mitama::dimensional::core {
             : std::type_identity<
               unit<
                 filtered<
-                  []<class D, auto N, auto _>(std::type_identity<dim<D, std::ratio<N, _>>>)
-                  /* => */ { return !!N; },
+                  []<class _, rational E>(std::type_identity<dim<_, E>>)
+                  /* => */ { return !std::ratio_equal_v<E, std::ratio<0>>; },
                   type_list<dim<typename BaseDims::dimension_type, std::ratio_add<
                     get_or_default<typename BaseDims::dimension_type, std::ratio<0>, type_list<LeftDims...>>,
                     get_or_default<typename BaseDims::dimension_type, std::ratio<0>, type_list<RightDims...>>
@@ -172,7 +173,7 @@ namespace mitama::dimensional::core {
   }
 
   template <class L, class R>
-  using unit_add = _secrets::unit_add_impl<L, R>::type;
+  using unit_add = _secrets::unit_add_impl<reduced_unit<L>, reduced_unit<R>>::type;
 
   // internal only
   namespace _secrets {
@@ -197,7 +198,7 @@ namespace mitama::dimensional::core {
   }
 
   template <class U>
-  using unit_negate = _secrets::unit_negate_impl<U>::type;
+  using unit_negate = _secrets::unit_negate_impl<reduced_unit<U>>::type;
 
   template <class L, class R>
   using unit_subtract = unit_add<L, unit_negate<R>>;
