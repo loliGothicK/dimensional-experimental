@@ -25,6 +25,6 @@ int main() {
 
   std::cout << avg_speed.value << " m/s\n";
 
-  constexpr quantity<auto, auto> mm = 3 * si::milli * mks::meters;
+  constexpr quantity mm = 3 * si::milli * mks::meters;
   // constexpr quantity<cgs::length, int> centi_metre = mm;
 }
