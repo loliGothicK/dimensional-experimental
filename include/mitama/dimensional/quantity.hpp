@@ -5,6 +5,7 @@
 #include <mitama/dimensional/core/type_list.hpp>
 #include <mitama/dimensional/core/dimension.hpp>
 #include <mitama/dimensional/core/core.hpp>
+#include <mitama/dimensional/core/into.hpp>
 
 namespace mitama::dimensional {
   // quantity container

@@ -32,6 +32,9 @@ namespace mitama::dimensional::core
   // concept for type-level rational type requirements
   template <class T> concept rational = _secrets::rational_impl<T>::value;
 
-  template <bool ...B> concept satisfy_all = (B && ...);
-  template <bool ...B> concept satisfy_any = (B || ...);
+  // concept for arithmetic type
+  template <class T> concept arithmetic = std::integral<T> or std::floating_point<T>;
+
+  template <bool ...B> concept satisfy_all_of = (... && B);
+  template <bool ...B> concept satisfy_any_of = (... || B);
 } // namespace mitama::dimensional::core

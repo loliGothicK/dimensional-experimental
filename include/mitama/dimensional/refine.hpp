@@ -18,4 +18,17 @@ namespace mitama::dimensional::refine {
 
   template <class Quantity>
   concept volume = has_dimension<Quantity, volume_dimension>;
+
+  template <class Quantity>
+  concept time = has_dimension<Quantity, time_dimension>;
+
+  template <class Quantity>
+  concept velocity
+    = has_dimension<
+        Quantity,
+        core::type_list<
+          core::dim<base_dimension::length>,
+          core::dim<base_dimension::time, std::ratio<-1>>
+        >
+      >;
 } // namespace mitama::dimensional::refine

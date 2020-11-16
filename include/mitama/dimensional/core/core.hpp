@@ -32,6 +32,15 @@ namespace mitama::dimensional::core {
           >
   {};
 
+  // * -> [*] -> [*]
+  template <auto, class> struct transform;
+  template <auto Map, class ...Dims>
+  struct transform<Map, type_list<Dims...>>
+          : std::type_identity<type_list<decltype(Map(std::type_identity<Dims>{}))...>>
+  {};
+
+  template <class T> struct to_base_dim { using type = T::dimension_type; };
+
   // internal only
   namespace _secrets {
     template <class ...>
@@ -51,20 +60,17 @@ namespace mitama::dimensional::core {
   // phantom type to distinguish systems of measurement
   template <class...> struct homogeneous_system {};
 
-  // [ Example:
-  //  unit<
-  //    Compatible Dimension,
-  //    heterogeneous_system<
-  //      type_list<
-  //        System_0,
-  //        System_1,
-  //        ...,
-  //        System_n
-  //  >>>
-  // -- end example ]
-  template <class...> struct heterogeneous_system {};
+  template <class> struct heterogeneous_system {};
 
-// top-level phantom type
+  template <class, // Dim List
+            class, // Base Units
+            class> // Scales
+  struct heterogeneous_system_info {};
+
+  template <class BaseUnit, class Scale>
+  struct heterogeneous_system_dim {};
+
+  // top-level phantom type
   template <class Dim, class System>
   struct unit;
 
@@ -84,6 +90,22 @@ namespace mitama::dimensional::core {
   template <class, class> struct reduce_dim;
   template <class ...Terms, class ...Bases>
   struct reduce_dim<type_list<Terms...>, homogeneous_system<Bases...>>
+          : std::type_identity<
+            concat<
+              typename _secrets::reduce_dim_impl<
+                typename filter_by<Bases, type_list<Terms...>>::type
+              >::type...
+            >
+          >
+  {};
+
+  template <class S, class D, class ...Terms, class ...Bases>
+  struct reduce_dim<
+            type_list<Terms...>,
+            heterogeneous_system<
+              heterogeneous_system_info<D, type_list<Bases...>, S>
+            >
+          >
           : std::type_identity<
             concat<
               typename _secrets::reduce_dim_impl<
@@ -179,4 +201,15 @@ namespace mitama::dimensional::core {
 
   template <class L, class R>
   using unit_subtract = unit_add<L, unit_negate<R>>;
+}
+
+
+// concepts for internal use
+namespace mitama::dimensional::core {
+  namespace _secrets {
+    template <class> struct is_unit : std::false_type {};
+    template <class D, class S> struct is_unit<unit<D, S>> : std::true_type {};
+  }
+
+  template <class T> concept unit_type = _secrets::is_unit<T>::value;
 }

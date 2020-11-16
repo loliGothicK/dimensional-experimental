@@ -9,35 +9,37 @@ namespace mitama::dimensional::core {
   // internal only
   namespace _secrets
   {
-    template <class, class> struct disj_hack;
+    template <class, class, template <class> class> struct disj_hack;
 
-    template <template <class, class> class Pair, class ToFind, class Key, class Value>
-    struct disj_hack<ToFind, Pair<Key, Value>>
+    template <template <class, class> class Pair, class ToFind, class Key, class Value, template <class> class Projection>
+    struct disj_hack<ToFind, Pair<Key, Value>, Projection>
     {
       static constexpr struct hack {
-        constexpr operator bool() const noexcept { return std::is_same_v<ToFind, Key>; }
+        constexpr operator bool() const noexcept { return std::is_same_v<ToFind, typename Projection<Key>::type>; }
         using type = Value;
       } value{};
     };
   } // namespace _secrets
 
+  // internal only
   namespace _secrets {
     // * -> * -> [(*, *)] -> *
     template <class K, class V>
     struct my_pair;
 
-    template <class, class, class> struct get_or_default_impl;
-    template <class ToFind, class Default, class ...Pairs>
-    struct get_or_default_impl<ToFind, Default, type_list<Pairs...>>
+    template <class, class, class, template <class> class> struct get_or_default_impl;
+    template <class ToFind, class Default, class ...Pairs, template <class> class Projection>
+            requires satisfy_all_of<pair_type<Pairs>...>
+    struct get_or_default_impl<ToFind, Default, type_list<Pairs...>, Projection>
             : std::type_identity<typename decltype(std::disjunction<
-                    _secrets::disj_hack<ToFind, Pairs>...,                  // terms
-                    _secrets::disj_hack<Default, my_pair<Default, Default>> // gurdian
+                    _secrets::disj_hack<ToFind, Pairs, Projection>...,                  // terms
+                    _secrets::disj_hack<Default, my_pair<Default, Default>, Projection> // guardian
             >::value)::type>
     {};
   }
 
-  template <class Default, class ToFind, class Dict>
-  using get_or_default = _secrets::get_or_default_impl<Default, ToFind, Dict>::type;
+  template <class Default, class ToFind, class Dict, template <class> class Projection = std::type_identity>
+  using get_or_default = _secrets::get_or_default_impl<Default, ToFind, Dict, Projection>::type;
 
   namespace _secrets {
     template<class...>
@@ -88,6 +90,14 @@ namespace mitama::dimensional::core {
 
   template <template <class> class Pred>
   [[maybe_unused]] inline constexpr auto meta_pred = []<class T>(std::type_identity<T>){ return Pred<T>::value; };
+
+  namespace _secrets {
+    template <class> struct fst_impl {};
+    template <template <class...> class List, class T, class ..._> struct fst_impl<List<T, _...>>
+    { using type = T; };
+  }
+
+  template <class T> using fst = _secrets::fst_impl<T>::type;
 }
 
 // Set operations for type_list
