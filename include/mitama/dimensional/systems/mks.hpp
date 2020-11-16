@@ -30,7 +30,7 @@ namespace mitama::dimensional::mks {
 
 namespace mitama::dimensional::mks {
   inline constexpr auto
-  operator*(si::value_with_prefix<auto, auto> value, core::unit_type auto unit)
+  operator*(si::scaled_value auto value, core::unit_type auto unit)
     -> quantity<
         core::unit<
           typename decltype(unit)::dimension_type,
