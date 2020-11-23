@@ -19,34 +19,4 @@ namespace mitama::dimensional::mks {
   [[maybe_unused]] inline constexpr auto kilograms = mass{};
   [[maybe_unused]] inline constexpr auto second    = time{};
   [[maybe_unused]] inline constexpr auto seconds   = time{};
-
-  inline constexpr auto
-  operator*(core::arithmetic auto value, core::unit_type auto unit)
-    -> quantity<decltype(unit), decltype(value)>
-    { return {value}; }
-}
-
-#include <mitama/dimensional/systems/si/prefixes.hpp>
-
-namespace mitama::dimensional::mks {
-  inline constexpr auto
-  operator*(si::scaled_value auto value, core::unit_type auto unit)
-    -> quantity<
-        core::unit<
-          typename decltype(unit)::dimension_type,
-          core::heterogeneous_system<
-            core::heterogeneous_system_info<
-              typename core::transform<
-                []<class D, class E>(std::type_identity<core::dim<D, E>>)
-                  -> core::fst<core::filter_by<D, typename decltype(unit)::system_type>>
-                { return {}; },
-                typename decltype(unit)::dimension_type
-              >::type,
-              typename decltype(unit)::dimension_type,
-              typename decltype(value)::ratio_type
-            >
-          >
-        >,
-        typename decltype(value)::value_type>
-    { return {value.value}; }
 }

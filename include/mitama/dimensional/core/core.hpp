@@ -137,12 +137,11 @@ namespace mitama::dimensional::core {
   struct base_unit : private base_unit_tag { using dimension_type = Dim; };
 
   // base unit with scale
-  template <class BaseUnit, class Scale>
-  struct scaled_base_unit : private base_unit_tag { using dimension_type = BaseUnit::dimension_type; };
-
-  // for scaled_base_unit
-  template <arithmetic Base, rational Exponent>
-  struct scale {};
+  template <class BaseUnit, rational Scale>
+  struct scaled_base_unit : private base_unit_tag {
+    using dimension_type = BaseUnit::dimension_type;
+    using scale_type = Scale;
+  };
 
   // helper type function
   template <class BaseUnit, class Scale>
@@ -213,4 +212,20 @@ namespace mitama::dimensional::core {
   }
 
   template <class T> concept unit_type = _secrets::is_unit<T>::value;
+
+  template <unit_type U1, unit_type U2>
+  struct is_same_system_with: std::is_same<typename U1::system_type, typename U2::system_type> {};
+
+  template <class T, class U>
+  concept same_system_with = is_same_system_with<T, U>::value;
+}
+
+namespace mitama::dimensional::core {
+  template <unit_type U1, unit_type U2> requires same_system_with<U1, U2>
+  inline constexpr auto operator*(U1, U2) -> unit_add<U1, U2>
+  { return {}; }
+
+  template <unit_type U1, unit_type U2> requires same_system_with<U1, U2>
+  inline constexpr auto operator/(U1, U2) -> unit_subtract<U1, U2>
+  { return {}; }
 }
