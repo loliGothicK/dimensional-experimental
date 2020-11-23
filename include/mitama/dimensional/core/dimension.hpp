@@ -13,5 +13,15 @@ namespace mitama::dimensional {
   using volume_dimension = core::type_list<core::dim<base_dimension::length, std::ratio<3>>>;
 
   using mass_dimension = core::type_list<core::dim<base_dimension::mass>>;
+
   using time_dimension = core::type_list<core::dim<base_dimension::time>>;
+
+  using electric_current_dimension = core::type_list<core::dim<base_dimension::electric_current>>;
+
+  using thermodynamic_temperature_dimension = core::type_list<core::dim<base_dimension::thermodynamic_temperature>>;
+
+  using amount_of_substance_dimension = core::type_list<core::dim<base_dimension::amount_of_substance>>;
+
+  using luminous_intensity_dimension = core::type_list<core::dim<base_dimension::luminous_intensity>>;
+
 }
