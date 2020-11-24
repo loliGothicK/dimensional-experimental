@@ -15,7 +15,13 @@ namespace mitama::dimensional {
   template <>
   struct into_trait<std::remove_cvref_t<decltype(si::milli * si::meters)>, si::length> {
     constexpr auto operator ()(core::arithmetic auto from) const {
-      return from / 1000.0;
+      return from / 1000;
+    }
+  };
+  template <>
+  struct into_trait<si::length, std::remove_cvref_t<decltype(si::milli * si::meters)>> {
+    constexpr auto operator ()(core::arithmetic auto from) const {
+      return from * 1000;
     }
   };
 }
@@ -44,8 +50,9 @@ int main() {
   }
   // implicit unit conversion
   {
-    constexpr quantity<si::length> m = 3.0 * si::meters | into<>;
-    std::cout << m.value << " m" << std::endl;
+    using millimeter = std::remove_cvref_t<decltype(si::milli * si::meter)>;
+    constexpr quantity<millimeter> m = 3.0 * si::meters | into<>;
+    std::cout << m.value << " mm" << std::endl;
   }
 // An implicit narrowing conversion in value type should result in a compilation error.
 //  { constexpr quantity<si::length, int> _ = 3.0 * si::meters | into<>; }
