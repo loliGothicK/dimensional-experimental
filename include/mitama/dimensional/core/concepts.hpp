@@ -37,4 +37,8 @@ namespace mitama::dimensional::core
 
   template <bool ...B> concept satisfy_all_of = (... && B);
   template <bool ...B> concept satisfy_any_of = (... || B);
+
+  template <class T, class ...Args>
+  concept braced_initializable = requires (Args... args) { T{args...}; };
+
 } // namespace mitama::dimensional::core

@@ -44,6 +44,8 @@ namespace mitama::dimensional::core {
   namespace _secrets {
     template<class...>
     struct concat_impl;
+    template<>
+    struct concat_impl<> { using type = type_list<>; };
     template<template<class...> class Pack, class... Elems>
     struct concat_impl<Pack<Elems...>> {
       using type = Pack<Elems...>;

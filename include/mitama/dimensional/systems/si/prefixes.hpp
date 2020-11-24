@@ -51,6 +51,21 @@ namespace mitama::dimensional::si {
 }
 
 namespace mitama::dimensional {
+  inline constexpr auto operator*(si::prefix_type auto prefix, core::unit_type auto unit)
+  -> core::unit<
+      typename decltype(unit)::dimension_type,
+          core::heterogeneous_system<
+              core::heterogeneous_system_dim<
+                  core::scaled_base_unit<
+                      decltype(unit),
+                      typename decltype(prefix)::type
+                  >,
+                  std::ratio<1, 1>
+              >
+          >
+      >
+  { return {}; }
+
   inline constexpr auto
   operator*(si::scaled_value auto scale, core::unit_type auto unit)
   -> quantity<

@@ -3,12 +3,13 @@
 #include <mitama/dimensional/core/concepts.hpp>
 #include <ratio>
 #include <type_traits>
+#include <utility>
 
 // core interfaces
 namespace mitama::dimensional::core {
   // pair of Dim and Ratio
   template <class Base, core::rational Ratio = std::ratio<1>>
-  struct dim : Base {
+  struct dim {
     // Self type
     using dimension_type = dim<Base, Ratio>;
     // base dimension-type
@@ -101,36 +102,16 @@ namespace mitama::dimensional::core {
           >
   {};
 
-  template <class S, class D, class ...Terms, class ...Bases>
+  template <class S, class ...Terms>
   struct reduce_dim<
             type_list<Terms...>,
-            heterogeneous_system<
-              heterogeneous_system_info<D, type_list<Bases...>, S>
-            >
+            heterogeneous_system<S>
           >
-          : std::type_identity<
-            concat<
-              typename _secrets::reduce_dim_impl<
-                typename filter_by<Bases, type_list<Terms...>>::type
-              >::type...
-            >
-          >
+          : std::type_identity<unit<type_list<Terms...>, heterogeneous_system<S>>>
   {};
 
   template <class Dimensions, class System> using reduced_dim = reduce_dim<Dimensions, System>::type;
 
-  template<class Unit>
-  using reduced_unit = Unit::unit_type;
-
-  template<typename ...Terms, typename System>
-  struct unit<type_list<Terms...>, System> {
-    // reduced unit-type
-    using unit_type      = unit<reduced_dim<type_list<Terms...>, System>, System>;
-    // dimension-type (unit without system)
-    using dimension_type = type_list<Terms...>;
-    // homogeneous_system-type
-    using system_type    = System;
-  };
   struct base_unit_tag {};
   // base class for base units
   template <class Dim>
@@ -172,7 +153,7 @@ namespace mitama::dimensional::core {
   }
 
   template <class L, class R>
-  using unit_add = _secrets::unit_add_impl<reduced_unit<L>, reduced_unit<R>>::type;
+  using unit_add = _secrets::unit_add_impl<typename L::unit_type, typename R::unit_type>::type;
 
   // internal only
   namespace _secrets {
@@ -197,10 +178,53 @@ namespace mitama::dimensional::core {
   }
 
   template <class U>
-  using unit_negate = _secrets::unit_negate_impl<reduced_unit<U>>::type;
+  using unit_negate = _secrets::unit_negate_impl<typename U::unit_type>::type;
 
   template <class L, class R>
-  using unit_subtract = unit_add<L, unit_negate<R>>;
+  using unit_subtract = unit_add<L, unit_negate<typename R::unit_type>>;
+
+  template<class Unit>
+  concept reducible = [impl = [](auto f, auto first, auto... rest) -> bool {
+    if constexpr (sizeof...(rest) > 0) return (... && (!std::is_same_v<decltype(first), decltype(rest)>)) && f(f, rest...);
+    else return true;
+  }]<class... Terms>(std::type_identity<type_list<Terms...>>) -> bool {
+    if constexpr (sizeof...(Terms) < 2) return true;
+    else return impl(impl, std::type_identity<Terms>{}...);
+  }(std::type_identity<typename Unit::dimension_type>{});
+
+  template <class Unit, class = void>
+  struct reduced_unit_impl: std::type_identity<Unit> {};
+
+  template <class Unit>
+  struct reduced_unit_impl<Unit, std::enable_if_t<reducible<Unit>>>: std::type_identity<Unit> {};
+
+  template <class, class> struct recip_unit;
+  template<typename ...Terms, typename System>
+  struct recip_unit<type_list<Terms...>, System> {
+    using unit_type = unit_negate<typename reduced_unit_impl<unit<type_list<Terms...>, System>>::type>;
+    using system_type    = System;
+    using dimension_type = type_list<dim<typename Terms::base_type, std::ratio_subtract<std::ratio<0>, typename Terms::ratio>>...>;
+  };
+
+  template<typename ...Terms, typename System>
+  struct unit<type_list<Terms...>, System> {
+    // reduced unit-type
+    using unit_type      = typename reduced_unit_impl<unit<type_list<Terms...>, System>>::type;
+    // dimension-type (unit without system)
+    using dimension_type = type_list<Terms...>;
+    // homogeneous_system-type
+    using system_type    = System;
+
+    template <int N>
+    static constexpr auto pow = []<std::size_t... Indices>(std::index_sequence<Indices...>)
+            -> std::conditional_t<N==0, unit<type_list<>, System>,
+                  std::conditional_t<(N < 0), decltype((std::declval<unit<type_list<>, System>>() * ... * (Indices, std::declval<unit_type>()))),
+                        decltype((... * (Indices, std::declval<unit_type>())))>>
+            { return {}; }(std::make_index_sequence<std::abs(N)>{});
+
+    static constexpr auto recip = recip_unit<type_list<Terms...>, System>{};
+  };
+
 }
 
 
@@ -209,6 +233,7 @@ namespace mitama::dimensional::core {
   namespace _secrets {
     template <class> struct is_unit : std::false_type {};
     template <class D, class S> struct is_unit<unit<D, S>> : std::true_type {};
+    template <class D, class S> struct is_unit<recip_unit<D, S>> : std::true_type {};
   }
 
   template <class T> concept unit_type = _secrets::is_unit<T>::value;
