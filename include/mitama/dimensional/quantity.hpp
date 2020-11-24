@@ -34,7 +34,7 @@ namespace mitama::dimensional {
 namespace mitama::dimensional {
   inline constexpr auto
   operator*(core::arithmetic auto value, core::unit_type auto unit)
-  -> quantity<decltype(unit), decltype(value)>
+  -> quantity<typename decltype(unit)::unit_type, decltype(value)>
   { return {value}; }
 }
 

@@ -57,7 +57,7 @@ namespace mitama::dimensional {
           core::heterogeneous_system<
               core::heterogeneous_system_dim<
                   core::scaled_base_unit<
-                      decltype(unit),
+                      typename decltype(unit)::unit_type,
                       typename decltype(prefix)::type
                   >,
                   std::ratio<1, 1>
@@ -74,7 +74,7 @@ namespace mitama::dimensional {
           core::heterogeneous_system<
               core::heterogeneous_system_dim<
                   core::scaled_base_unit<
-                      decltype(unit),
+                      typename decltype(unit)::unit_type,
                       typename decltype(scale)::ratio_type
                   >,
                   std::ratio<1, 1>
