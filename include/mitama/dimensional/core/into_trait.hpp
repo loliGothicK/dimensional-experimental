@@ -3,11 +3,11 @@
 namespace mitama::dimensional {
   // This class is a trait class for describing the rules of unit conversion.
   // In order to describe new conversion rules,
-  // you can partially or fully specialize this class to implement with the following signature.
+  // you can partially or fully specialize this class to implement new conversion rules with the following signature.
   //
-  // [ -- Example: impl trait for conversion from millimeter to meter.
+  // [ -- Example: impl trait for conversion from meter to millimeter.
   //      template <>
-  //      struct into_trait<millimeter, meter> {
+  //      struct into_trait<meter, millimeter> {
   //          constexpr auto operator()(core::arithmetic auto from) { return from * 1000; };
   //      };
   //  -- end example ]
