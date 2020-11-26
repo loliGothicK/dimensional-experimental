@@ -54,9 +54,9 @@ int main() {
     std::cout << m.value << " mm" << std::endl;
 
     // explicit unit conversion with function call
-    { constexpr quantity _ = into<si::meter>(3.0 * si::milli * si::meters); }
+    { [[maybe_unused]] constexpr quantity _ = into<si::meter>(3.0 * si::milli * si::meters); }
     // implicit unit conversion with function call
-    { constexpr quantity<millimeter> _ = into(3.0 * si::meters); }
+    { [[maybe_unused]] constexpr quantity<millimeter> _ = into(3.0 * si::meters); }
   }
 // An implicit narrowing conversion in value type should result in a compilation error.
 //  { constexpr quantity<si::length, int> _ = 3.0 * si::meters | into<>; }

@@ -4,6 +4,7 @@
 #include <ratio>
 #include <type_traits>
 #include <utility>
+#include <cmath>
 
 // core interfaces
 namespace mitama::dimensional::core {

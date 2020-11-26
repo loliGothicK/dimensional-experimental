@@ -31,6 +31,11 @@ namespace mitama::dimensional {
   template <class T> concept quantity_type = is_quantity_v<T>;
 }
 
+namespace mitama::dimensional::core {
+  template <class L, class R>
+  concept same_dim_with = std::same_as<typename L::dimension_type, typename R::dimension_type>;
+}
+
 namespace mitama::dimensional {
   inline constexpr auto
   operator*(core::arithmetic auto value, core::unit_type auto unit)
