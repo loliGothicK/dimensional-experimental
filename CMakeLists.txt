@@ -13,4 +13,5 @@ include_directories(
   PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-add_executable(main ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
+add_executable(test ${CMAKE_CURRENT_SOURCE_DIR}/src/test.cpp)
+add_executable(intro ${CMAKE_CURRENT_SOURCE_DIR}/src/intro.cpp)
