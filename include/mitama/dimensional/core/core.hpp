@@ -185,7 +185,7 @@ namespace mitama::dimensional::core {
   using unit_subtract = unit_add<L, unit_negate<typename R::unit_type>>;
 
   // This concept checks the Unit for identical underlying dimensions.
-  // It returns true if Unit has same base dimension in its dimension list, otherwise returns false.
+  // It returns true if Unit has same base dimensions in its dimension list, otherwise returns false.
   // [ -- Note:
   //    Underlying dimensions are implemented as [(D_0, E_0), (D_1, E_1), ..., (D_n, E_n)].
   //    D <- base dimension (type), E <- exponent (type)
@@ -200,18 +200,18 @@ namespace mitama::dimensional::core {
   // -- end note ]
   template<class Unit>
   concept reducible = [impl = [](auto f, auto first, auto... rest) -> bool {
-    if constexpr (sizeof...(rest) > 0) return (... || std::is_same_v<decltype(first), decltype(rest)>) && f(f, rest...);
+    if constexpr (sizeof...(rest) > 0) return (... || std::is_same_v<decltype(first), decltype(rest)>) || f(f, rest...);
     else return false;
   }]<class... Terms>(std::type_identity<type_list<Terms...>>) -> bool {
-    if constexpr (sizeof...(Terms) < 2) return false;
+    if constexpr (not sizeof...(Terms)) return false;
     else return impl(impl, std::type_identity<typename Terms::base_type>{}...);
   }(std::type_identity<typename Unit::dimension_type>{});
 
-  template <class Unit, class = void>
+  template <class Unit>
   struct reduced_unit_impl: std::type_identity<Unit> {};
 
-  template <class Unit>
-  struct reduced_unit_impl<Unit, std::enable_if_t<reducible<Unit>>>
+  template <reducible Unit>
+  struct reduced_unit_impl<Unit>
           : std::type_identity<
               unit<
                 reduced_dim<typename Unit::dimension_type, typename Unit::system_type>,
@@ -221,9 +221,9 @@ namespace mitama::dimensional::core {
 
   template <class Unit> using reduced_unit = reduced_unit_impl<Unit>::type;
 
-  template <class, class> struct recip_unit;
+  template <class, class> struct reciprocal_unit;
   template<typename ...Terms, typename System>
-  struct recip_unit<type_list<Terms...>, System> {
+  struct reciprocal_unit<type_list < Terms...>, System> {
     using unit_type = unit_negate<reduced_unit<unit<type_list<Terms...>, System>>>;
     using system_type    = System;
     using dimension_type = type_list<dim<typename Terms::base_type, std::ratio_subtract<std::ratio<0>, typename Terms::ratio>>...>;
@@ -241,11 +241,11 @@ namespace mitama::dimensional::core {
     template <int N>
     static constexpr auto pow = []<std::size_t... Indices>(std::index_sequence<Indices...>)
             -> std::conditional_t<N==0, unit<type_list<>, System>,
-                  std::conditional_t<(N < 0), decltype((std::declval<unit<type_list<>, System>>() * ... * (Indices, std::declval<unit_type>()))),
+                  std::conditional_t<(N < 0), decltype((... * (Indices, std::declval<unit_negate<unit_type>>()))),
                         decltype((... * (Indices, std::declval<unit_type>())))>>
             { return {}; }(std::make_index_sequence<std::abs(N)>{});
 
-    static constexpr auto recip = recip_unit<type_list<Terms...>, System>{};
+    static constexpr auto recip = reciprocal_unit<type_list<Terms...>, System>{};
   };
 
 }
@@ -256,7 +256,7 @@ namespace mitama::dimensional::core {
   namespace _secrets {
     template <class> struct is_unit : std::false_type {};
     template <class D, class S> struct is_unit<unit<D, S>> : std::true_type {};
-    template <class D, class S> struct is_unit<recip_unit<D, S>> : std::true_type {};
+    template <class D, class S> struct is_unit<reciprocal_unit<D, S>> : std::true_type {};
   }
 
   template <class T> concept unit_type = _secrets::is_unit<T>::value;
