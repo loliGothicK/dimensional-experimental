@@ -1,5 +1,5 @@
 #pragma once
-#include <mitama/dimensional/systems/si/si.hpp>
+#include <mitama/dimensional/systems/si/base_units.hpp>
 
 namespace mitama::dimensional::si {
   [[maybe_unused]] inline constexpr auto velocity = meters * seconds.recip;

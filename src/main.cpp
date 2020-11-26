@@ -1,10 +1,10 @@
 #include <iostream>
-#include <mitama/dimensional/all.hpp>
-#include <mitama/dimensional/systems/mks.hpp>
-#include <mitama/dimensional/systems/cgs.hpp>
+#include <mitama/dimensional/prelude.hpp>
+#include <mitama/dimensional/systems/mks/base_units.hpp>
+#include <mitama/dimensional/systems/cgs/base_units.hpp>
 #include <mitama/dimensional/systems/si/prefixes.hpp>
-#include <mitama/dimensional/systems/si/si.hpp>
-#include <mitama/dimensional/systems/si/derived.hpp>
+#include <mitama/dimensional/systems/si/base_units.hpp>
+#include <mitama/dimensional/systems/si/derived_units.hpp>
 #include <mitama/dimensional/into.hpp>
 //#include <boost/type_index.hpp>
 
@@ -43,16 +43,20 @@ int main() {
 
   std::cout << avg_speed.value << " m/s\n";
 
-  // explicit unit conversion
   {
+    // explicit unit conversion with pipeline operator
     constexpr quantity mm = 3.0 * si::milli * si::meters | into<si::meter>;
     std::cout << mm.value << " m" << std::endl;
-  }
-  // implicit unit conversion
-  {
+
+    // implicit unit conversion with pipeline operator
     using millimeter = std::remove_cvref_t<decltype(si::milli * si::meter)>;
     constexpr quantity<millimeter> m = 3.0 * si::meters | into<>;
     std::cout << m.value << " mm" << std::endl;
+
+    // explicit unit conversion with function call
+    { constexpr quantity _ = into<si::meter>(3.0 * si::milli * si::meters); }
+    // implicit unit conversion with function call
+    { constexpr quantity<millimeter> _ = into(3.0 * si::meters); }
   }
 // An implicit narrowing conversion in value type should result in a compilation error.
 //  { constexpr quantity<si::length, int> _ = 3.0 * si::meters | into<>; }

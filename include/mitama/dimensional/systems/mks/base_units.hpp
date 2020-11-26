@@ -9,9 +9,9 @@ namespace mitama::dimensional::mks {
 
   using mks_system = core::homogeneous_system<length_base_unit, mass_base_unit, time_base_unit>;
 
-  using length = core::unit<length_dimension, mks_system>;
-  using mass = core::unit<mass_dimension, mks_system>;
-  using time = core::unit<time_dimension, mks_system>;
+  using length = core::unit<length_dim, mks_system>;
+  using mass = core::unit<mass_dim, mks_system>;
+  using time = core::unit<time_dim, mks_system>;
 
   [[maybe_unused]] inline constexpr auto meter     = length{};
   [[maybe_unused]] inline constexpr auto meters    = length{};

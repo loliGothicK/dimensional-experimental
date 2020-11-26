@@ -2,33 +2,28 @@
 #include <concepts>
 #include <mitama/dimensional/core/dimension.hpp>
 
-// concepts for refinement
-namespace mitama::dimensional::refine {
+namespace mitama::dimensional::core {
   template <class Quantity, class Dimension>
   concept has_dimension = std::same_as<typename Quantity::dimension_type, Dimension>;
+}
+
+// concepts for refinement
+namespace mitama::dimensional::refine {
+  template <class Quantity>
+  concept dimless = core::has_dimension<Quantity, dimless>;
 
   template <class Quantity>
-  concept dimless = has_dimension<Quantity, dimless>;
+  concept length = core::has_dimension<Quantity, length_dim>;
 
   template <class Quantity>
-  concept length = has_dimension<Quantity, length_dimension>;
+  concept area = core::has_dimension<Quantity, area_dim>;
 
   template <class Quantity>
-  concept area = has_dimension<Quantity, area_dimension>;
+  concept volume = core::has_dimension<Quantity, volume_dim>;
 
   template <class Quantity>
-  concept volume = has_dimension<Quantity, volume_dimension>;
+  concept time = core::has_dimension<Quantity, time_dim>;
 
   template <class Quantity>
-  concept time = has_dimension<Quantity, time_dimension>;
-
-  template <class Quantity>
-  concept velocity
-    = has_dimension<
-        Quantity,
-        core::type_list<
-          core::dim<base_dimension::length>,
-          core::dim<base_dimension::time, std::ratio<-1>>
-        >
-      >;
+  concept velocity = core::has_dimension<Quantity, velocity_dim>;
 } // namespace mitama::dimensional::refine

@@ -8,7 +8,7 @@ namespace mitama::dimensional::cgs {
 
   using cgs_system = core::homogeneous_system<length_base_unit, mass_base_unit, time_base_unit>;
 
-  using length = core::unit<length_dimension, cgs_system>;
-  using mass = core::unit<mass_dimension, cgs_system>;
-  using time = core::unit<time_dimension, cgs_system>;
+  using length = core::unit<length_dim, cgs_system>;
+  using mass = core::unit<mass_dim, cgs_system>;
+  using time = core::unit<time_dim, cgs_system>;
 }

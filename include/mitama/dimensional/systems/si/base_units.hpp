@@ -21,13 +21,13 @@ namespace mitama::dimensional::si {
           luminous_intensity_base_unit
   >;
 
-  using length = core::unit<length_dimension, si_system>;
-  using mass = core::unit<mass_dimension, si_system>;
-  using time = core::unit<time_dimension, si_system>;
-  using electric_current = core::unit<electric_current_dimension, si_system>;
-  using thermodynamic_temperature = core::unit<thermodynamic_temperature_dimension, si_system>;
-  using amount_of_substance = core::unit<amount_of_substance_dimension, si_system>;
-  using luminous_intensity = core::unit<luminous_intensity_dimension, si_system>;
+  using length = core::unit<length_dim, si_system>;
+  using mass = core::unit<mass_dim, si_system>;
+  using time = core::unit<time_dim, si_system>;
+  using electric_current = core::unit<electric_current_dim, si_system>;
+  using thermodynamic_temperature = core::unit<thermodynamic_temperature_dim, si_system>;
+  using amount_of_substance = core::unit<amount_of_substance_dim, si_system>;
+  using luminous_intensity = core::unit<luminous_intensity_dim, si_system>;
 
   [[maybe_unused]] inline constexpr auto meter     = length{};
   [[maybe_unused]] inline constexpr auto meters    = length{};
