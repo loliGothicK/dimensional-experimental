@@ -47,4 +47,9 @@ namespace mitama::dimensional {
   inline constexpr auto into(core::into_impl = {})
     -> core::into_result<std::remove_cvref_t<decltype(To)>>
     { return {}; }
+
+  // Usage: `into<Unit>(quantity)` or `into(quantity)`
+  template <core::unit_type_or_nullptr auto To = nullptr, quantity_type Quantity>
+  inline constexpr auto into(Quantity const& from)
+    { return from | into<To>; }
 }
